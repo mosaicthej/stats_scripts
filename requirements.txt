@@ -1,5 +1,5 @@
 numpy
-matplotlib.pyplot
+matplotlib
 rich
-scipy.stats
+scipy
 math
