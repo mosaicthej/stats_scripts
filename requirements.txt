@@ -1,0 +1,5 @@
+numpy
+matplotlib.pyplot
+rich
+scipy.stats
+math
