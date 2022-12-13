@@ -7,15 +7,19 @@ import matplotlib.pyplot as plt
 import rich
 import scipy.stats as stats
 import math
+import termplotlib as tpl
 
+from rich.layout import Layout
+from rich import print
+from rich.panel import Panel
 
 ########
 # I/O  #
 ########
 
 # function that parse a string to a list of numbers (space separated)
-def parse_string_to_list(string):
-    return [float(x) for x in string.split()]
+def parse_string_to_list(stri: str):
+    return [float(x) for x in stri.split()]
 
 ####################
 # basic statistics #
@@ -91,6 +95,24 @@ def display_basic_statistics(numbers):
     print("Range: ", max(numbers) - min(numbers))
     print("Interquartile Range: ", interquartile_range(numbers))
 
+#####################
+# sampling function #
+#####################
+# function that returns a list of random sample of size n from a list of population
+def random_sample(population, n: int, rep=False):
+    return np.random.choice(population, n, replace=rep)
+
+# function that returns n random samples of size k from a list of population, also returns the mean of each sample
+def random_samples(population, n: int, k: int, rep=False):
+    samples = []
+    means = []
+    for i in range(n):
+        sample = random_sample(population, k, rep)
+        samples.append(sample)
+        means.append(mean(sample))
+    return samples, means
+
+
 ####################
 # 1D plots         #
 ####################
@@ -102,4 +124,39 @@ def plot_histogram(numbers, bins=10, title="Histogram", xlabel="x", ylabel="Freq
     plt.ylabel(ylabel)
     plt.show()
 
-# function that plots a boxplot of a list of numbers
+# plot histogram, but in console directly (using termplotlib and rich, set detailed to True to see the values and frequencies)
+def plot_histogram_console(numbers, bins=10, title="Histogram", xlabel="x", ylabel="Frequency", detailed=False):
+    x = np.array(numbers)
+    y = np.array([1] * len(x))
+    counts, bin_edges = np.histogram(x, bins=bins)
+    fig = tpl.figure()
+    # default parameters for hist():
+    # counts: List[int],
+    # bin_edges: List[float],
+    # orientation: str = "vertical",
+    # max_width: int = 40,
+    # grid=None,
+    # bar_width: int = 1,
+    # strip: bool = False,
+    # force_ascii: bool = False,
+
+    # if detailed is True, show the values and frequencies
+    if detailed:
+        fig.hist(counts, bin_edges, max_width=80, bar_width=1, orientation="horizontal", grid="y")
+        rich.print(Panel(fig, title=title, border_style="blue"))
+        # put values and frequencies in a table and print it using rich
+        table = rich.table.Table(title="Values and Frequencies")
+        table.add_column("Values", justify="right")
+        table.add_column("Frequencies", justify="right")
+        for i in range(len(counts)):
+            table.add_row(str(bin_edges[i]), str(counts[i]))
+        rich.print(table)
+        
+    else:
+        fig.hist(counts, bin_edges, max_width=80, bar_width=1, orientation="horizontal")
+        rich.print(Panel(fig, title=title, border_style="blue"))
+
+
+    fig.hist(counts, bin_edges, max_width=80, bar_width=1)
+    rich.print(Panel(fig, title=title, border_style="blue"))
+
