@@ -174,4 +174,3 @@ def plot_stem_and_leaf(numbers, title="Stem and Leaf Plot", xlabel="x", ylabel="
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.show()
-
