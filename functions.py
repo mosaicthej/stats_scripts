@@ -151,7 +151,6 @@ def plot_histogram_console(numbers, bins=10, title="Histogram", xlabel="x", ylab
         for i in range(len(counts)):
             table.add_row(str(bin_edges[i]), str(counts[i]))
         rich.print(table)
-        
     else:
         fig.hist(counts, bin_edges, max_width=80, bar_width=1, orientation="horizontal")
         rich.print(Panel(fig, title=title, border_style="blue"))
@@ -159,4 +158,20 @@ def plot_histogram_console(numbers, bins=10, title="Histogram", xlabel="x", ylab
 
     fig.hist(counts, bin_edges, max_width=80, bar_width=1)
     rich.print(Panel(fig, title=title, border_style="blue"))
+
+# function that plots a boxplot of a list of numbers
+def plot_boxplot(numbers, title="Boxplot", xlabel="x", ylabel="y"):
+    plt.boxplot(numbers)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.show()
+
+# function that plots a stem and leaf plot of a list of numbers
+def plot_stem_and_leaf(numbers, title="Stem and Leaf Plot", xlabel="x", ylabel="y"):
+    plt.stem(numbers)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.show()
 
