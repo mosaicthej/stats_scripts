@@ -501,3 +501,158 @@ def poisson_between_plot(l: float, k: int, a: int, b: int):
     plt.ylabel("P(X = k)")
     plt.show(block=False)
 
+###########################
+# Geometric Distributions #
+###########################
+# function that calculates the probability of a random variable being a certain value
+def geometric_probability(p: float, k: int):
+    if k < 1:
+        raise ValueError("k cannot be less than 1")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    return q ** (k - 1) * p
+
+# function that calculates the probability of a random variable being less than or equal to a certain value
+def geometric_cdf(p: float, k: int):
+    if k < 1:
+        raise ValueError("k cannot be less than 1")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    probability = 0
+    for i in range(k):
+        probability += geometric_probability(p, i + 1)
+    return probability
+
+# function that calculates the probability of a random variable being greater than or equal to a certain value
+def geometric_sf(p: float, k: int):
+    if k < 1:
+        raise ValueError("k cannot be less than 1")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    return 1 - geometric_cdf(p, k)
+
+# function that calculates the probability of a random variable being between a certain range
+def geometric_between(p: float, a: int, b: int):
+    if a > b:
+        raise ValueError("a cannot be greater than b")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    probability = 0
+    for i in range(a, b + 1):
+        probability += geometric_probability(p, i)
+    return probability
+
+
+
+###########################
+# Continuous Distributions#
+###########################
+
+###########################
+# Normal Distributions    #
+###########################
+# function that finds the z-score of a value
+def z_score(mean: float, std: float, value: float):
+    return (value - mean) / std
+
+# function that finds the value of a z-score
+def value(mean: float, std: float, z: float):
+    return mean + (std * z)
+
+# function that finds the z-score from a probability
+def z_score_from_probability(probability: float):
+    return stats.norm.ppf(probability)
+
+# function that use normal probability density function to find the probability of a random variable being a certain value (use stats.norm)
+def normal_probability(mean: float, std: float, value: float):
+    return stats.norm.pdf(value, mean, std)
+
+# function that use normal cumulative distribution function to find the probability of a random variable being less than or equal to a certain value
+def normal_cdf(mean: float, std: float, value: float):
+    return stats.norm.cdf(value, mean, std)
+
+# function that use normal survival function to find the probability of a random variable being greater than or equal to a certain value
+def normal_sf(mean: float, std: float, value: float):
+    return stats.norm.sf(value, mean, std)
+
+# function that use normal probability density function to find the probability of a random variable being between a certain range
+def normal_between(mean: float, std: float, a: float, b: float):
+    return stats.norm.cdf(b, mean, std) - stats.norm.cdf(a, mean, std)
+
+# function that plots the normal probability density function
+def normal_plot(mean: float, std: float, a: float, b: float):
+    x = []
+    y = []
+    for i in np.arange(a, b, 0.01):
+        x.append(i)
+        y.append(normal_probability(mean, std, i))
+    plt.plot(x, y)
+    plt.title("Normal Probability Density Function")
+    plt.xlabel("x")
+    plt.ylabel("P(X = x)")
+    plt.show(block=False)
+
+# function that plots the normal cumulative distribution function
+def normal_cdf_plot(mean: float, std: float, a: float, b: float):
+    x = []
+    y = []
+    for i in np.arange(a, b, 0.01):
+        x.append(i)
+        y.append(normal_cdf(mean, std, i))
+    plt.plot(x, y)
+    plt.title("Normal Cumulative Distribution Function")
+    plt.xlabel("x")
+    plt.ylabel("P(X <= x)")
+    plt.show(block=False)
+
+# function that plots the normal survival function
+def normal_sf_plot(mean: float, std: float, a: float, b: float):
+    x = []
+    y = []
+    for i in np.arange(a, b, 0.01):
+        x.append(i)
+        y.append(normal_probability(mean, std, i))
+    plt.plot(x, y)
+    plt.title("Normal Survival Function")
+    plt.xlabel("x")
+    plt.ylabel("P(X >= x)")
+    plt.show(block=False)
+
+# function that plots the normal probability density function between a certain range (plot from mu-5*sigma to mu+5*sigma)
+# for parts < a and > b, use a different color to show that they are not in the range
+def normal_between_plot(mean: float, std: float, a: float, b: float):
+    x = []
+    y = []
+    for i in np.arange(mean - 5 * std, mean + 5 * std, 0.01):
+        x.append(i)
+        y.append(normal_probability(mean, std, i))
+    plt.plot(x, y)
+    plt.fill_between(x, y, where=(np.array(x) >= a) & (np.array(x) <= b), color="red")
+    plt.fill_between(x, y, where=(np.array(x) < a) | (np.array(x) > b), color="blue")
+    plt.title("Normal Probability Density Function")
+    plt.xlabel("x")
+    plt.ylabel("P(X = x)")
+    plt.show(block=False)
+
+
+###########################
+# confidence interval     #
+###########################
+# function that calculates the confidence interval of a normal distribution
+def normal_confidence_interval(mean: float, std: float, n: int, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    if n <= 0:
+        raise ValueError("n must be greater than 0")
+    z = z_score_from_probability(confidence)
+    margin_of_error = z * (std / math.sqrt(n))
+    if detailed:
+        print("z-score: " + str(z))
+        print("margin of error: " + str(margin_of_error))
+    return mean - margin_of_error, mean + margin_of_error
+
+# function that calculates the confidence interval of a normal distribution
