@@ -761,6 +761,144 @@ def t_confidence_interval(data: list, confidence: float, detailed=False):
         print("margin of error: " + str(margin_of_error))
     return mu - margin_of_error, mu + margin_of_error
 
+
+###########################
+# 2-sample interval       #
+###########################
+# function that calculates the confidence interval for the difference between two means
+# if both population standard deviations are known, use z for the calculation
+def two_sample_interval_from_statistics(mu1: float, mu2: float, std1: float, std2: float, n1: int, n2: int, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    std_err = math.sqrt((std1 ** 2 / n1) + (std2 ** 2 / n2))
+    z = z_score_from_probability(confidence)
+    margin_of_error = z * std_err
+    if detailed:
+        print("z-score: " + str(z))
+        print("margin of error: " + str(margin_of_error))
+    return mu1 - mu2 - margin_of_error, mu1 - mu2 + margin_of_error
+
+# function that calculates the confidence interval for the difference between two means
+# if both population standard deviations are unknown, use t for the calculation
+def two_sample_interval_from_data(data1: list, data2: list, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    n1 = len(data1)
+    n2 = len(data2)
+    mu1 = mean(data1)
+    mu2 = mean(data2)
+    std_err = math.sqrt((standard_deviation_sample(data1) ** 2 / n1) + (standard_deviation_sample(data2) ** 2 / n2))
+    t = t_score_from_probability(confidence, n1 + n2 - 2)
+    margin_of_error = t * std_err
+    if detailed:
+        print("t-score: " + str(t))
+        print("margin of error: " + str(margin_of_error))
+    return mu1 - mu2 - margin_of_error, mu1 - mu2 + margin_of_error
+
+# function that plots the confidence interval for the difference between two means
+def two_sample_interval_plot(mu1: float, mu2: float, std1: float, std2: float, n1: int, n2: int, confidence: float, a: float, b: float):
+    x = []
+    y = []
+    for i in np.arange(a, b, 0.01):
+        x.append(i)
+        y.append(stats.norm.pdf(i, mu1 - mu2, math.sqrt((std1 ** 2 / n1) + (std2 ** 2 / n2))))
+    plt.plot(x, y)
+    plt.title("Confidence interval for the difference between two means")
+    plt.xlabel("x")
+    plt.ylabel("P(X = x)")
+    plt.show(block=False)
+
+# function that calculates the confidence interval for the difference between two means
+# if both population standard deviations are unknown but equal.
+def two_sample_interval_from_statistics_equal_std(mu1: float, mu2: float, std: float, n1: int, n2: int, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    sd_pooled = math.sqrt(((n1 - 1) * (std ** 2) + (n2 - 1) * (std ** 2)) / (n1 + n2 - 2))
+    std_err = sd_pooled * math.sqrt(1 / n1 + 1 / n2)
+    t = t_score_from_probability(confidence, n1 + n2 - 2)
+    margin_of_error = t * std_err
+    if detailed:
+        print("t-score: " + str(t))
+        print("margin of error: " + str(margin_of_error))
+        print("std_err: " + str(std_err))
+        print("sd_pooled: " + str(sd_pooled))
+    return mu1 - mu2 - margin_of_error, mu1 - mu2 + margin_of_error
+
+# function that calculates the confidence interval for the difference between two means
+# if both population standard deviations are unknown but equal.
+def two_sample_interval_from_data_equal_std(data1: list, data2: list, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    n1 = len(data1)
+    n2 = len(data2)
+    mu1 = mean(data1)
+    mu2 = mean(data2)
+    std = standard_deviation_sample(data1)
+    return two_sample_interval_from_statistics_equal_std(mu1, mu2, std, n1, n2, confidence, detailed)
+
+# function that plots the confidence interval for the difference between two means
+def two_sample_interval_plot_equal_std(mu1: float, mu2: float, std: float, n1: int, n2: int, confidence: float, a: float, b: float):
+    x = []
+    y = []
+    for i in np.arange(a, b, 0.01):
+        x.append(i)
+        y.append(stats.norm.pdf(i, mu1 - mu2, math.sqrt((std ** 2 / n1) + (std ** 2 / n2))))
+    plt.plot(x, y)
+    plt.title("Confidence interval for the difference between two means")
+    plt.xlabel("x")
+    plt.ylabel("P(X = x)")
+    plt.show(block=False)
+
+# function that calculates the confidence interval for the difference between two means
+# if the two population standard deviations are unknown and unequal
+def two_sample_interval_from_statistics_unequal_std(mu1: float, mu2: float, std1: float, std2: float, n1: int, n2: int, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    std_err = math.sqrt((std1 ** 2 / n1) + (std2 ** 2 / n2))
+    df = ((std1 ** 2 / n1) + (std2 ** 2 / n2)) ** 2 / (((std1 ** 2 / n1) ** 2 / (n1 - 1)) + ((std2 ** 2 / n2) ** 2 / (n2 - 1)))
+    t = t_score_from_probability(confidence, df)
+    margin_of_error = t * std_err
+    if detailed:
+        print("t-score: " + str(t))
+        print("margin of error: " + str(margin_of_error))
+        print("std_err: " + str(std_err))
+    return mu1 - mu2 - margin_of_error, mu1 - mu2 + margin_of_error
+
+# function that calculates the confidence interval for the difference between two means
+# if the two population standard deviations are unknown and unequal
+def two_sample_interval_from_data_unequal_std(data1: list, data2: list, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    n1 = len(data1)
+    n2 = len(data2)
+    mu1 = mean(data1)
+    mu2 = mean(data2)
+    std1 = standard_deviation_sample(data1)
+    std2 = standard_deviation_sample(data2)
+    return two_sample_interval_from_statistics_unequal_std(mu1, mu2, std1, std2, n1, n2, confidence, detailed)
+
+# function that plots the confidence interval for the difference between two means
+def two_sample_interval_plot_unequal_std(mu1: float, mu2: float, std1: float, std2: float, n1: int, n2: int, confidence: float, a: float, b: float):
+    x = []
+    y = []
+    for i in np.arange(a, b, 0.01):
+        x.append(i)
+        y.append(stats.norm.pdf(i, mu1 - mu2, math.sqrt((std1 ** 2 / n1) + (std2 ** 2 / n2))))
+    plt.plot(x, y)
+    plt.title("Confidence interval for the difference between two means")
+    plt.xlabel("x")
+    plt.ylabel("P(X = x)")
+    plt.show(block=False)
+
+# function that calculates the confidence interval for the difference between two means in a paired sample from data
+def paired_sample_interval_from_data(data1: list, data2: list, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    n = len(data1)
+    mu = mean([data1[i] - data2[i] for i in range(n)])
+    sd = math.sqrt(sum([(data1[i]-data2[i])**2 for i in range(n)]) - sum([data1[i]-data2[i] for i in range(n)])**2 / n / (n-1))
+    return paired_sample_interval_from_statistics(mu, sd, n, confidence, detailed)
+
 ###########################
 # 2-sample t-test         #
 ###########################
@@ -802,3 +940,39 @@ def two_sample_t_test_same_sd_from_statistics(mu1: float, mu2: float, std: float
         print("pool standard deviation: " + str(sd_pooled))
         print("std_err: " + str(std_err))
     return t, p
+
+# same as above, but with data as input
+def two_sample_t_test_same_sd_from_data(data1: list, data2: list, detailed=False):
+    mu1 = mean(data1)
+    mu2 = mean(data2)
+    std1 = standard_deviation_sample(data1)
+    std2 = standard_deviation_sample(data2)
+    n1 = len(data1)
+    n2 = len(data2)
+    std = math.sqrt(((n1 - 1) * (std1 ** 2) + (n2 - 1) * (std2 ** 2)) / (n1 + n2 - 2))
+    return two_sample_t_test_same_sd_from_statistics(mu1, mu2, std, n1, n2, detailed)
+
+# when both samples standard deviations are unknown, and not equal
+def two_sample_t_test_different_sd_from_statistics(mu1: float, mu2: float, std1: float, std2: float, n1: int, n2: int, detailed=False):
+    std_err = math.sqrt((std1 ** 2 / n1) + (std2 ** 2 / n2))
+    t = (mu1 - mu2) / std_err
+    df = ((std1 ** 2 / n1) + (std2 ** 2 / n2)) ** 2 / (((std1 ** 2 / n1) ** 2 / (n1 - 1)) + ((std2 ** 2 / n2) ** 2 / (n2 - 1)))
+    df = math.floor(df)
+    p = t_probability_from_score(t, df)
+    if detailed:
+        print("t-score: " + str(t))
+        print("p-value: " + str(p))
+        print("p-value (2-tailed): " + str(p * 2))
+        print("degrees of freedom: " + str(df))
+        print("std_err: " + str(std_err))
+    return t, p
+
+# same as above, but with data as input
+def two_sample_t_test_different_sd_from_data(data1: list, data2: list, detailed=False):
+    mu1 = mean(data1)
+    mu2 = mean(data2)
+    std1 = standard_deviation_sample(data1)
+    std2 = standard_deviation_sample(data2)
+    n1 = len(data1)
+    n2 = len(data2)
+    return two_sample_t_test_different_sd_from_statistics(mu1, mu2, std1, std2, n1, n2, detailed)
