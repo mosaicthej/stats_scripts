@@ -260,7 +260,7 @@ def binomial_cdf(n: int, k: int, p: float):
         probability += binomial_probability(n, i, p)
     return probability
 
-# function that calculates the probability of a random variable being greater than or equal to a certain value
+# function that calculates the probability of a random variable being greater than or equal to a certain value (survival function)
 def binomial_sf(n: int, k: int, p: float):
     if k > n:
         raise ValueError("k cannot be greater than n")
@@ -319,4 +319,185 @@ def hypergeometric_probability(n: int, x: int, N: int, X: int):
     if X < 0 or N < 0:
         raise ValueError("X and N cannot be negative")
     return binomial_coefficient(x, X) * binomial_coefficient(n - x, N - X) / binomial_coefficient(n, N)
+
+#####################
+# probability plots #
+#####################
+# function that plots the binomial probability distribution
+def binomial_plot(n: int, k: int, p: float):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    x = []
+    y = []
+    for i in range(n + 1):
+        x.append(i)
+        y.append(binomial_probability(n, i, p))
+    plt.bar(x, y)
+    plt.title("Binomial Probability Distribution")
+    plt.xlabel("k")
+    plt.ylabel("P(X = k)")
+    plt.show()
+
+# function that plots the binomial cumulative distribution
+def binomial_cdf_plot(n: int, k: int, p: float):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    x = []
+    y = []
+    for i in range(n + 1):
+        x.append(i)
+        y.append(binomial_cdf(n, i, p))
+    plt.bar(x, y)
+    plt.title("Binomial Cumulative Distribution")
+    plt.xlabel("k")
+    plt.ylabel("P(X <= k)")
+    plt.show()
+
+# function that plots the binomial survival function 
+def binomial_sf_plot(n: int, k: int, p: float):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    x = []
+    y = []
+    for i in range(n + 1):
+        x.append(i)
+        y.append(binomial_sf(n, i, p))
+    plt.bar(x, y)
+    plt.title("Binomial Survival Function")
+    plt.xlabel("k")
+    plt.ylabel("P(X >= k)")
+    plt.show()
+
+# function that plots the binomial probability distribution between a certain range
+def binomial_between_plot(n: int, k: int, p: float, a: int, b: int):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    if a > b:
+        raise ValueError("a cannot be greater than b")
+    q = 1 - p
+    x = []
+    y = []
+    for i in range(a, b + 1):
+        x.append(i)
+        y.append(binomial_probability(n, i, p))
+    plt.bar(x, y)
+    plt.title("Binomial Probability Distribution")
+    plt.xlabel("k")
+    plt.ylabel("P(X = k)")
+    plt.show(block=False)
+
+#########################
+# Poisson Distributions #
+#########################
+# function that calculates the probability of a random variable being a certain value
+def poisson_probability(l: float, k: int):
+    if k < 0:
+        raise ValueError("k cannot be negative")
+    return (l ** k) * (math.e ** (-1*l)) / math.factorial(k)
+
+# function that calculates the probability of a random variable being less than or equal to a certain value
+def poisson_cdf(l: float, k: int):
+    if k < 0:
+        raise ValueError("k cannot be negative")
+    probability = 0
+    for i in range(k + 1):
+        probability += poisson_probability(l, i)
+    return probability
+
+# function that calculates the probability of a random variable being greater than or equal to a certain value
+def poisson_sf(l: float, k: int):
+    if k < 0:
+        raise ValueError("k cannot be negative")
+    return 1 - poisson_cdf(l, k - 1)
+
+# function that calculates the probability of a random variable being between a certain range
+def poisson_between(l: float, a: int, b: int):
+    if a > b:
+        raise ValueError("a cannot be greater than b")
+    probability = 0
+    for i in range(a, b + 1):
+        probability += poisson_probability(l, i)
+    return probability
+
+
+# function that plots the poisson probability distribution
+def poisson_plot(l: float, k: int):
+    if k < 0:
+        raise ValueError("k cannot be negative")
+    x = []
+    y = []
+    for i in range(k + 1):
+        x.append(i)
+        y.append(poisson_probability(l, i))
+    plt.bar(x, y)
+    plt.title("Poisson Probability Distribution")
+    plt.xlabel("k")
+    plt.ylabel("P(X = k)")
+    plt.show()
+
+# function that plots the poisson cumulative distribution
+def poisson_cdf_plot(l: float, k: int):
+    if k < 0:
+        raise ValueError("k cannot be negative")
+    x = []
+    y = []
+    for i in range(k + 1):
+        x.append(i)
+        y.append(poisson_cdf(l, i))
+    plt.bar(x, y)
+    plt.title("Poisson Cumulative Distribution")
+    plt.xlabel("k")
+    plt.ylabel("P(X <= k)")
+    plt.show()
+
+# function that plots the poisson survival function
+def poisson_sf_plot(l: float, k: int):
+    if k < 0:
+        raise ValueError("k cannot be negative")
+    x = []
+    y = []
+    for i in range(k + 1):
+        x.append(i)
+        y.append(poisson_sf(l, i))
+    plt.bar(x, y)
+    plt.title("Poisson Survival Function")
+    plt.xlabel("k")
+    plt.ylabel("P(X >= k)")
+    plt.show()
+
+# function that plots the poisson probability distribution between a certain range
+def poisson_between_plot(l: float, k: int, a: int, b: int):
+    if k < 0:
+        raise ValueError("k cannot be negative")
+    if a > b:
+        raise ValueError("a cannot be greater than b")
+    x = []
+    y = []
+    for i in range(a, b + 1):
+        x.append(i)
+        y.append(poisson_probability(l, i))
+    plt.bar(x, y)
+    plt.title("Poisson Probability Distribution")
+    plt.xlabel("k")
+    plt.ylabel("P(X = k)")
+    plt.show(block=False)
 
