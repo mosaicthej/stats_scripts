@@ -13,6 +13,7 @@ from rich.layout import Layout
 from rich import print
 from rich.panel import Panel
 
+
 ########
 # I/O  #
 ########
@@ -55,9 +56,18 @@ def variance(numbers):
     mu = mean(numbers)
     return sum([(x - mu) ** 2 for x in numbers]) / len(numbers)
 
+# function that calculates the variance of a list of numbers as a sample
+def variance_sample(numbers):
+    mu = mean(numbers)
+    return sum([(x - mu) ** 2 for x in numbers]) / (len(numbers) - 1)
+
 # function that calculates the standard deviation of a list of numbers
 def standard_deviation(numbers):
     return math.sqrt(variance(numbers))
+
+# function that calculates the standard deviation of a list of numbers as a sample
+def standard_deviation_sample(numbers):
+    return math.sqrt(variance_sample(numbers))
 
 # function that return values and frequencies as a dictionary for a list of numbers
 def values_and_frequencies(numbers):
@@ -75,14 +85,21 @@ def values_and_frequencies(numbers):
 #//   return max(numbers) - min(numbers)
 
 # function that calculates the interquartile range of a list of numbers
-def interquartile_range(numbers):
+def interquartile_range(numbers, detailed=False):
     numbers = sorted(numbers)
     if len(numbers) % 2 == 0:
-        return (median(numbers[len(numbers) // 2:]) \
-            - median(numbers[:len(numbers) // 2]))
+        q1 = median(numbers[:len(numbers) // 2])
+        q3 = median(numbers[len(numbers) // 2:])
     else:
-        return (median(numbers[len(numbers) // 2 + 1:]) \
-            - median(numbers[:len(numbers) // 2]))
+        q1 = median(numbers[:len(numbers) // 2])
+        q3 = median(numbers[len(numbers) // 2 + 1:])
+    if detailed:
+        print("Q1: ", q1)        
+        print("Q3: ", q3)
+        print("median: ", median(numbers))
+        print("IQR: ", q3 - q1)
+    return q3 - q1
+
 
 # function that displays the basic statistics of a list of numbers in form of an aligned table
 def display_basic_statistics(numbers):
@@ -174,3 +191,132 @@ def plot_stem_and_leaf(numbers, title="Stem and Leaf Plot", xlabel="x", ylabel="
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.show()
+
+#################################
+# probability and combinatorics #
+#################################
+# function that calculates the factorial of a number
+def factorial(n: int):
+    if n < 0:
+        raise ValueError("Factorial is not defined for negative numbers")
+    if n == 0:
+        return 1
+    return n * factorial(n - 1)
+
+# function that calculates the binomial coefficient of n and k
+def binomial_coefficient(n: int, k: int):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    return factorial(n) / (factorial(k) * factorial(n - k))
+
+# function that calculates the binomial probability of n and k
+def binomial_probability(n: int, k: int, p: float, detailed=False):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    if detailed: # use rich to print the formula and local variables (very cool, varible values in different colors)
+        print(f"[bold blue]P(X = {k}) = [bold green]{binomial_coefficient(n, k)} * [bold green]{p}^{k} * [bold green]{q}^{n - k}")
+        print(f"[green] p = [red]{p}")
+        print(f"[green] q = [red]{q}")
+        print(f"[green] n = [red]{n}")
+        print(f"[green] k = [red]{k}")
+        
+
+    return binomial_coefficient(n, k) * (p ** k) * (q ** (n - k))
+
+# function that calculates the main statistics in binomial distribution of n and k
+def binomial_distribution(n: int, k: int, p: float):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    mean = n * p
+    variance = n * p * q
+    standard_deviation = math.sqrt(n * p * q)
+    print("Mean: ", mean)
+    print("Variance: ", variance)
+    print("Standard Deviation: ", standard_deviation)
+
+# function that calculates the probability of a random variable being less than or equal to a certain value
+def binomial_cdf(n: int, k: int, p: float):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    probability = 0
+    for i in range(k + 1):
+        probability += binomial_probability(n, i, p)
+    return probability
+
+# function that calculates the probability of a random variable being greater than or equal to a certain value
+def binomial_sf(n: int, k: int, p: float):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    q = 1 - p
+    probability = 0
+    for i in range(k, n + 1):
+        probability += binomial_probability(n, i, p)
+    return probability
+
+# function that calculates the probability of a random variable being between a certain range
+def binomial_between(n: int, k: int, p: float, a: int, b: int):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    if a > b:
+        raise ValueError("a cannot be greater than b")
+    q = 1 - p
+    probability = 0
+    for i in range(a, b + 1):
+        probability += binomial_probability(n, i, p)
+    return probability
+
+# function that calculates the probability of a random variable being outside a certain range
+def binomial_outside(n: int, k: int, p: float, a: int, b: int):
+    if k > n:
+        raise ValueError("k cannot be greater than n")
+    if k < 0 or n < 0:
+        raise ValueError("k and n cannot be negative")
+    if p < 0 or p > 1:
+        raise ValueError("p must be between 0 and 1")
+    if a > b:
+        raise ValueError("a cannot be greater than b")
+    q = 1 - p
+    probability = 0
+    for i in range(a):
+        probability += binomial_probability(n, i, p)
+    for i in range(b + 1, n + 1):
+        probability += binomial_probability(n, i, p)
+    return probability
+
+# probability in a hypergeometric distribution (when each trial is not independent)
+def hypergeometric_probability(n: int, x: int, N: int, X: int):
+    if x > n:
+        raise ValueError("x cannot be greater than n")
+    if x < 0 or n < 0:
+        raise ValueError("x and n cannot be negative")
+    if X > N:
+        raise ValueError("X cannot be greater than N")
+    if X < 0 or N < 0:
+        raise ValueError("X and N cannot be negative")
+    return binomial_coefficient(x, X) * binomial_coefficient(n - x, N - X) / binomial_coefficient(n, N)
+
