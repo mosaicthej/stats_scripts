@@ -567,6 +567,10 @@ def value(mean: float, std: float, z: float):
 def z_score_from_probability(probability: float):
     return stats.norm.ppf(probability)
 
+# function that finds the probability from a z-score
+def probability_from_z_score(z: float):
+    return stats.norm.cdf(z)
+
 # function that use normal probability density function to find the probability of a random variable being a certain value (use stats.norm)
 def normal_probability(mean: float, std: float, value: float):
     return stats.norm.pdf(value, mean, std)
@@ -656,3 +660,145 @@ def normal_confidence_interval(mean: float, std: float, n: int, confidence: floa
     return mean - margin_of_error, mean + margin_of_error
 
 # function that calculates the confidence interval of a normal distribution
+def normal_confidence_interval_from_std_error(mean: float, std_error: float, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    z = z_score_from_probability(confidence)
+    margin_of_error = z * std_error
+    if detailed:
+        print("z-score: " + str(z))
+        print("margin of error: " + str(margin_of_error))
+    return mean - margin_of_error, mean + margin_of_error
+
+# function that calculates the confidence interval for a proportion from sample data
+def proportion_confidence_interval_from_data(data: list, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    p = sum(data) / len(data)
+    n = len(data)
+    z = z_score_from_probability(confidence)
+    margin_of_error = z * math.sqrt((p * (1 - p)) / n)
+    if detailed:
+        print("z-score: " + str(z))
+        print("margin of error: " + str(margin_of_error))
+    return p - margin_of_error, p + margin_of_error
+
+# function that calculates the confidence interval for a proportion from statistics
+def proportion_confidence_interval_from_statistics(p: float, n: int, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    if n <= 0:
+        raise ValueError("n must be greater than 0")
+    z = z_score_from_probability(confidence)
+    margin_of_error = z * math.sqrt((p * (1 - p)) / n)
+    if detailed:
+        print("z-score: " + str(z))
+        print("margin of error: " + str(margin_of_error))
+    return p - margin_of_error, p + margin_of_error
+
+###########################
+# proportion             #
+###########################
+# function that calculates the confidence interval of a proportion
+def proportion_confidence_interval(p: float, n: int, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    if n <= 0:
+        raise ValueError("n must be greater than 0")
+    z = z_score_from_probability(confidence)
+    margin_of_error = z * math.sqrt((p * (1 - p)) / n)
+    if detailed:
+        print("z-score: " + str(z))
+        print("margin of error: " + str(margin_of_error))
+    return p - margin_of_error, p + margin_of_error
+
+
+###########################
+# t-distribution          #
+###########################
+# when the population standard deviation is unknown, use t-distribution
+# function that calculates the t-score from a probability with n-1 degrees of freedom
+def t_score_from_probability(probability: float, n: int):
+    return stats.t.ppf(probability, n - 1)
+
+# function that calculates the probability from a t-score with n-1 degrees of freedom
+def t_probability_from_score(score: float, n: int):
+    return stats.t.cdf(score, n - 1)
+
+# from a list of data, find the statiscs of the t-distribution
+def t_distribution_from_data(data: list, detailed=False):
+    n = len(data)
+    mu = mean(data)
+    std_err = standard_deviation_sample(data) / math.sqrt(n)
+    if detailed:
+        print("mean: " + str(mu))
+        print("standard error: " + str(std_err))
+    return mu, std_err
+
+# function that plots the t-distribution
+def t_plot(n: int, a: float, b: float):
+    x = []
+    y = []
+    for i in np.arange(a, b, 0.01):
+        x.append(i)
+        y.append(stats.t.pdf(i, n - 1))
+    plt.plot(x, y)
+    plt.title("t-distribution")
+    plt.xlabel("x")
+    plt.ylabel("P(X = x)")
+    plt.show(block=False)
+
+# function that estimate a (1-alpha)% confidence interval for the population mean
+def t_confidence_interval(data: list, confidence: float, detailed=False):
+    if confidence < 0 or confidence > 1:
+        raise ValueError("confidence must be between 0 and 1")
+    n = len(data)
+    mu, std_err = t_distribution_from_data(data, detailed)
+    t = t_score_from_probability(confidence, n)
+    margin_of_error = t * std_err
+    if detailed:
+        print("t-score: " + str(t))
+        print("margin of error: " + str(margin_of_error))
+    return mu - margin_of_error, mu + margin_of_error
+
+###########################
+# 2-sample t-test         #
+###########################
+
+# if the population standard deviation is known, use z-test
+def two_sample_z_test_from_statistics(mu1: float, mu2: float, std1: float, std2: float, n1: int, n2: int, detailed=False):
+    std_err = math.sqrt((std1 ** 2 / n1) + (std2 ** 2 / n2))
+    z = (mu1 - mu2) / std_err
+    p = probability_from_z_score(z)
+    if detailed:
+        print("z-score: " + str(z))
+        print("p-value: " + str(p))
+        print("p-value (2-tailed): " + str(p * 2))
+        print("std_err: " + str(std_err))
+    return z, p
+
+
+# same as above, but with data as input
+def two_sample_z_test_from_data(data1: list, data2: list, detailed=False):
+    mu1 = mean(data1)
+    mu2 = mean(data2)
+    std1 = standard_deviation(data1)
+    std2 = standard_deviation(data2)
+    n1 = len(data1)
+    n2 = len(data2)
+    return two_sample_z_test_from_statistics(mu1, mu2, std1, std2, n1, n2, detailed)
+
+# if the population standard deviation is unknown, use t-test
+# when both samples standard deviations are unknown, but equal
+def two_sample_t_test_same_sd_from_statistics(mu1: float, mu2: float, std: float, n1: int, n2: int, detailed=False):
+    sd_pooled = math.sqrt(((n1 - 1) * (std ** 2) + (n2 - 1) * (std ** 2)) / (n1 + n2 - 2))
+    std_err = sd_pooled * math.sqrt((1 / n1) + (1 / n2))
+    t = (mu1 - mu2) / std_err
+    p = t_probability_from_score(t, n1 + n2 - 2)
+    if detailed:
+        print("t-score: " + str(t))
+        print("p-value: " + str(p))
+        print("p-value (2-tailed): " + str(p * 2))
+        print("pool standard deviation: " + str(sd_pooled))
+        print("std_err: " + str(std_err))
+    return t, p
